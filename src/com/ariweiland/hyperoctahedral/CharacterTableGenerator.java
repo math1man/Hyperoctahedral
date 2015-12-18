@@ -1,6 +1,7 @@
 package com.ariweiland.hyperoctahedral;
 
 import com.ariweiland.hyperoctahedral.partition.SignedIntegerPartition;
+import com.ariweiland.hyperoctahedral.young.SignedYoungDiagram;
 
 import java.util.*;
 

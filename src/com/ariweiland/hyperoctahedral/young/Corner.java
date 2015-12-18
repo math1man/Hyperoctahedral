@@ -1,4 +1,4 @@
-package com.ariweiland.hyperoctahedral;
+package com.ariweiland.hyperoctahedral.young;
 
 import java.util.Collections;
 import java.util.List;

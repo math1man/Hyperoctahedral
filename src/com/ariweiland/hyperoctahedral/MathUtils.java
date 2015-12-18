@@ -72,19 +72,4 @@ public class MathUtils {
         }
         return list;
     }
-
-    public static void main(String[] args) {
-        List<SignedIntegerPartition> sips = signedIntegerPartitions(7);
-        Collections.sort(sips);
-        List<SignedYoungDiagram> syds = new ArrayList<>();
-        for (SignedIntegerPartition p : sips) {
-            System.out.println(p);
-            syds.add(new SignedYoungDiagram(p));
-        }
-        Collections.sort(syds);
-        System.out.println();
-        for (SignedYoungDiagram p : syds) {
-            System.out.println(p);
-        }
-    }
 }

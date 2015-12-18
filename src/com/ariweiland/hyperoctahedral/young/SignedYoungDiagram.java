@@ -1,4 +1,4 @@
-package com.ariweiland.hyperoctahedral;
+package com.ariweiland.hyperoctahedral.young;
 
 import com.ariweiland.hyperoctahedral.partition.IntegerPartition;
 import com.ariweiland.hyperoctahedral.partition.SignedIntegerPartition;
