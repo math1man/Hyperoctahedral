@@ -3,13 +3,12 @@ package com.ariweiland.hyperoctahedral.young;
 import com.ariweiland.hyperoctahedral.partition.IntegerPartition;
 import com.ariweiland.hyperoctahedral.partition.SignedIntegerPartition;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Ari Weiland
  */
-public class SignedYoungDiagram implements Comparable<SignedYoungDiagram> {
+public class SignedYoungDiagram extends AbstractYoungDiagram<SignedYoungDiagram> {
 
     private final YoungDiagram positive;
     private final YoungDiagram negative;
@@ -35,10 +34,12 @@ public class SignedYoungDiagram implements Comparable<SignedYoungDiagram> {
         return negative;
     }
 
+    @Override
     public boolean isEmpty() {
         return positive.isEmpty() && negative.isEmpty();
     }
 
+    @Override
     public SignedYoungDiagram reflect() {
         return new SignedYoungDiagram(positive.reflect(), negative.reflect());
     }
@@ -47,10 +48,7 @@ public class SignedYoungDiagram implements Comparable<SignedYoungDiagram> {
         return new SignedYoungDiagram(negative, positive);
     }
 
-    public SignedYoungDiagram reverseReflect() {
-        return new SignedYoungDiagram(negative.reflect(), positive.reflect());
-    }
-
+    @Override
     public Map<SignedYoungDiagram, Integer> reduce(int n) {
         Map<YoungDiagram, Integer> posMap = positive.reduce(n);
         Map<YoungDiagram, Integer> negMap = negative.reduce(n);
@@ -134,5 +132,14 @@ public class SignedYoungDiagram implements Comparable<SignedYoungDiagram> {
     @Override
     public String toString() {
         return "{" + positive + ", " + negative + "}";
+    }
+
+    public static List<SignedYoungDiagram> all(int n) {
+        List<SignedYoungDiagram> list = new ArrayList<>();
+        for (SignedIntegerPartition sip : SignedIntegerPartition.all(n)) {
+            list.add(new SignedYoungDiagram(sip));
+        }
+        Collections.sort(list);
+        return list;
     }
 }

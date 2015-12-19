@@ -3,6 +3,8 @@ package com.ariweiland.hyperoctahedral.young;
 import java.util.List;
 
 /**
+ * CornerSequence has useful information and utility methods regarding a sequence of contiguous
+ * corners of a YoungDiagram. It is essential for the YoungDiagram's reduce method.
  * @author Ari Weiland
  */
 public class CornerSequence {
@@ -28,22 +30,27 @@ public class CornerSequence {
         this.corners = corners;
     }
 
-    public static int min(int... ints) {
-        int min = ints[0];
-        for (int i=1; i<ints.length; i++) {
-            min = Math.min(min, ints[i]);
-        }
-        return min;
-    }
-
+    /**
+     * Returns the index of the first block of the CornerSequence.
+     * @return
+     */
     public int getStartIndex() {
         return startIndex;
     }
 
+    /**
+     * Returns the part size of the first block of the corner sequence.
+     * Note this is the same as the part size of the first corner.
+     * @return
+     */
     public int getStartPartSize() {
         return startPartSize;
     }
-    
+
+    /**
+     * Returns the total height of the CornerSequence.
+     * @return
+     */
     public int getHeight() {
         int sum = 0;
         for (Corner c : corners) {
@@ -52,10 +59,10 @@ public class CornerSequence {
         return sum;
     }
 
-    public int getFirstCornerIndex() {
-        return getCorners().get(0).getCornerIndex();
-    }
-    
+    /**
+     * Returns the total width of this CornerSequence.
+     * @return
+     */
     public int getWidth() {
         int sum = 0;
         for (Corner c : corners) {
@@ -64,6 +71,10 @@ public class CornerSequence {
         return sum;
     }
 
+    /**
+     * Returns the number of blocks in this CornerSequence.
+     * @return
+     */
     public int getLength() {
         int sum = getCorners().size() - 1;
         for (Corner c : getCorners()) {
@@ -72,6 +83,11 @@ public class CornerSequence {
         return sum;
     }
 
+    /**
+     * Returns the number of blocks between the tip of the first and last corners, inclusive.
+     * This is the minimum removable length from this CornerSequence.
+     * @return
+     */
     public int getMinLength() {
         int sum = 1;
         for (int i=0; i<getCorners().size(); i++) {
@@ -89,18 +105,38 @@ public class CornerSequence {
         return corners;
     }
 
+    /**
+     * Returns the number of corners in the sequence.
+     * @return
+     */
     public int size() {
         return getCorners().size();
     }
 
+    /**
+     * Returns the ith corner of the sequence.
+     * @param i
+     * @return
+     */
     public Corner get(int i) {
         return getCorners().get(i);
     }
 
+    /**
+     * Returns true if the sequence comprises only one corner.
+     * Always returns true if called on a Corner object.
+     * @return
+     */
     public boolean isCorner() {
         return size() == 1;
     }
 
+    /**
+     * Returns the number of ways to legally remove n blocks from this corner sequence.
+     * Note if n is less than getMinLength() or more than getLength(), the value is 0.
+     * @param n
+     * @return
+     */
     public int degreesOfFreedom(int n) {
         if (n > getLength() || n < getMinLength()) {
             return 0;
@@ -110,6 +146,11 @@ public class CornerSequence {
         }
     }
 
+    /**
+     * Returns true if other is immediately preceding or proceeding this sequence.
+     * @param other
+     * @return
+     */
     public boolean isAdjacent(CornerSequence other) {
         if (other.getStartIndex() == getStartIndex()) {
             return false;
@@ -152,6 +193,11 @@ public class CornerSequence {
                 '}';
     }
 
+    /**
+     * Checks whether a list of Corners and/or CornerSequences are consecutive and adjacent.
+     * @param corners
+     * @return
+     */
     public static boolean checkAdjacency(List<? extends CornerSequence> corners) {
         for (int i=0; i<corners.size() - 1; i++) {
             // check order and adjacency
@@ -162,5 +208,13 @@ public class CornerSequence {
         }
         return true;
 
+    }
+
+    private static int min(int... ints) {
+        int min = ints[0];
+        for (int i=1; i<ints.length; i++) {
+            min = Math.min(min, ints[i]);
+        }
+        return min;
     }
 }

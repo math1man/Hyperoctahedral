@@ -27,6 +27,7 @@ public class IntegerPartition extends AbstractPartition implements Comparable<In
         this.length = length;
     }
 
+    @Override
     public int[] getPartition() {
         return cleanArray(partition, length);
     }
@@ -106,17 +107,17 @@ public class IntegerPartition extends AbstractPartition implements Comparable<In
         return Arrays.toString(getPartition());
     }
 
-    public static List<IntegerPartition> integerPartitions(int n) {
-        return integerPartitionRecurse(n, n);
+    public static List<IntegerPartition> all(int n) {
+        return generator(n, n);
     }
 
-    private static List<IntegerPartition> integerPartitionRecurse(int n, int max) {
+    private static List<IntegerPartition> generator(int n, int max) {
         List<IntegerPartition> list = new ArrayList<>();
         if (n <= 0) {
             return Collections.singletonList(new IntegerPartition(0));
         } else {
             for (int i = 1; i <= Math.min(n, max); i++) {
-                List<IntegerPartition> recurse = integerPartitionRecurse(n - i, i);
+                List<IntegerPartition> recurse = generator(n - i, i);
                 for (IntegerPartition p : recurse) {
                     IntegerPartition p2 = new IntegerPartition(p.getSize() + i);
                     p2.addPart(i);

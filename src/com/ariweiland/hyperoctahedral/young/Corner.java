@@ -4,6 +4,11 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * Corner holds relevant data for a single corner of a YoungDiagram. It extends CornerSequence
+ * so that it can be used interchangeably with one. By overriding the getCorners() method,
+ * all the CornerSequence methods will behave properly and return the appropriate values.
+ * The getHeight() and getWidth() methods are also overridden because they are precisely
+ * defined for a corner.
  * @author Ari Weiland
  */
 public class Corner extends CornerSequence {
@@ -26,6 +31,10 @@ public class Corner extends CornerSequence {
         this.width = width;
     }
 
+    /**
+     * Returns the index of the corner point.
+     * @return
+     */
     public int getCornerIndex() {
         return getStartIndex() + getHeight() - 1;
     }
@@ -41,14 +50,6 @@ public class Corner extends CornerSequence {
     @Override
     public List<Corner> getCorners() {
         return Collections.singletonList(this);
-    }
-
-    public int degreesOfFreedom(int n) {
-        if (n > getLength()) {
-            return 0;
-        } else {
-            return Math.min(getLength() - n + 1, n);
-        }
     }
 
     @Override
@@ -69,15 +70,5 @@ public class Corner extends CornerSequence {
         result = 31 * result + height;
         result = 31 * result + width;
         return result;
-    }
-
-    @Override
-    public String toString() {
-        return "Corner{" +
-                "index=" + getStartIndex() +
-                ", partSize=" + getStartPartSize() +
-                ", height=" + height +
-                ", width=" + width +
-                '}';
     }
 }

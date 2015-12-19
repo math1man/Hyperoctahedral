@@ -41,6 +41,16 @@ public class SignedIntegerPartition extends AbstractPartition implements Compara
     }
 
     @Override
+    public int[] getPartition() {
+        int[] joined = new int[posLen + negLen];
+        System.arraycopy(positive, 0, joined, 0, posLen);
+        for (int i=0; i<negLen; i++) {
+            joined[posLen + i] = -negative[negLen - 1 - i];
+        }
+        return joined;
+    }
+
+    @Override
     public int remainder() {
         return getSize() - sum(positive) - sum(negative);
     }
@@ -144,11 +154,11 @@ public class SignedIntegerPartition extends AbstractPartition implements Compara
         return "{" + Arrays.toString(getPositive()) + ", " + Arrays.toString(getNegative()) + "}";
     }
 
-    public static List<SignedIntegerPartition> signedIntegerPartitions(int n) {
+    public static List<SignedIntegerPartition> all(int n) {
         List<SignedIntegerPartition> list = new ArrayList<>();
         for (int i=0; i<=n; i++) {
-            List<IntegerPartition> positive = IntegerPartition.integerPartitions(n - i);
-            List<IntegerPartition> negative = IntegerPartition.integerPartitions(i);
+            List<IntegerPartition> positive = IntegerPartition.all(n - i);
+            List<IntegerPartition> negative = IntegerPartition.all(i);
             for (IntegerPartition pos : positive) {
                 for (IntegerPartition neg : negative) {
                     list.add(new SignedIntegerPartition(pos.getPartition(), neg.getPartition()));

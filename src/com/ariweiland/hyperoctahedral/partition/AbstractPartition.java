@@ -1,6 +1,9 @@
 package com.ariweiland.hyperoctahedral.partition;
 
 /**
+ * A superclass for IntegerPartition and SignedIntegerPartition, detailing a few methods and members
+ * that both classes use. Partitions should be instantiated from a full int array, or with an
+ * initial size so that they can be assembled by adding parts.
  * @author Ari Weiland
  */
 public abstract class AbstractPartition {
@@ -24,6 +27,8 @@ public abstract class AbstractPartition {
     protected void setComplete(boolean isComplete) {
         this.isComplete = isComplete;
     }
+
+    public abstract int[] getPartition();
 
     /**
      * Returns the remainder of this partition that has not been partitioned yet.

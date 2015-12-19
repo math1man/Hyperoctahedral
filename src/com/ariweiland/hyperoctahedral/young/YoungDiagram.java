@@ -2,15 +2,12 @@ package com.ariweiland.hyperoctahedral.young;
 
 import com.ariweiland.hyperoctahedral.partition.IntegerPartition;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Ari Weiland
  */
-public class YoungDiagram implements Comparable<YoungDiagram> {
+public class YoungDiagram extends AbstractYoungDiagram<YoungDiagram> {
 
     private final IntegerPartition partition;
 
@@ -29,14 +26,12 @@ public class YoungDiagram implements Comparable<YoungDiagram> {
         return partition;
     }
 
+    @Override
     public boolean isEmpty() {
         return partition.getSize() == 0;
     }
 
-    /**
-     * Returns a new YoungDiagram that is the reflection of this one about its diagonal axis
-     * @return
-     */
+    @Override
     public YoungDiagram reflect() {
         return new YoungDiagram(getPartition().inverse());
     }
@@ -76,11 +71,7 @@ public class YoungDiagram implements Comparable<YoungDiagram> {
         return sequences;
     }
 
-    /**
-     * Returns a
-     * @param n
-     * @return
-     */
+    @Override
     public Map<YoungDiagram, Integer> reduce(int n) {
         Map<YoungDiagram, Integer> reduced = new HashMap<>();
         int reducedSize = partition.getSize() - n;
@@ -156,5 +147,14 @@ public class YoungDiagram implements Comparable<YoungDiagram> {
     @Override
     public String toString() {
         return partition.toString();
+    }
+
+    public static List<YoungDiagram> all(int n) {
+        List<YoungDiagram> list = new ArrayList<>();
+        for (IntegerPartition ip : IntegerPartition.all(n)) {
+            list.add(new YoungDiagram(ip));
+        }
+        Collections.sort(list);
+        return list;
     }
 }
