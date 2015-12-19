@@ -1,5 +1,7 @@
 package com.ariweiland.hyperoctahedral.partition;
 
+import com.ariweiland.hyperoctahedral.Utils;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -11,70 +13,53 @@ import java.util.List;
 public class IntegerPartition extends AbstractPartition implements Comparable<IntegerPartition> {
 
     private final int[] partition;
-    private int length;
 
-    public IntegerPartition(int size) {
-        this(new int[size], size, 0, size == 0);
+    /**
+     * Constructs an IntegerPartition of size 0.
+     */
+    public IntegerPartition() {
+        this(new int[0]);
     }
 
+    /**
+     * Constructs an IntegerPartition from the input array.
+     * @param partition
+     */
     public IntegerPartition(int[] partition) {
-        this(partition, sum(partition), partition.length, true);
-    }
-
-    private IntegerPartition(int[] partition, int size, int length, boolean isComplete) {
-        super(size, isComplete);
+        super(Utils.sum(partition));
         this.partition = partition;
-        this.length = length;
     }
 
     @Override
     public int[] getPartition() {
-        return cleanArray(partition, length);
-    }
-
-    @Override
-    public int remainder() {
-        return getSize() - sum(partition);
-    }
-
-    @Override
-    public boolean addPart(int i) {
-        boolean output = addPart(i, partition, length);
-        if (output) length++;
-        return output;
+        return partition;
     }
 
     @Override
     public IntegerPartition inverse() {
-        if (!isComplete()) {
-            throw new UnsupportedOperationException("Cannot invert an incomplete partition!");
-        }
-        IntegerPartition inverse = new IntegerPartition(getSize());
-        int i = length - 1;
+        IntegerPartitionBuilder builder = new IntegerPartitionBuilder(getSize());
+        int i = partition.length - 1;
         int j = 1;
         while (i >= 0) {
             if (partition[i] >= j) {
-                inverse.addPart(i + 1);
+                builder.addPart(i + 1);
                 j++;
             } else {
                 i--;
             }
         }
-        return inverse;
+        return builder.build();
     }
 
     @Override
     public int compareTo(IntegerPartition o) {
-        if (!isComplete() || !o.isComplete()) {
-            throw new UnsupportedOperationException("Cannot compare incomplete partitions!");
-        }
         // compare length
-        int compare = -Integer.compare(length, o.length);
+        int compare = -Integer.compare(partition.length, o.partition.length);
         if (compare != 0) {
             return compare;
         }
         // compare lexicographically
-        for (int i=0; i<length; i++) {
+        for (int i=0; i<partition.length; i++) {
             compare = Integer.compare(partition[i], o.partition[i]);
             if (compare != 0) {
                 return compare;
@@ -107,28 +92,34 @@ public class IntegerPartition extends AbstractPartition implements Comparable<In
         return Arrays.toString(getPartition());
     }
 
+    /**
+     * Returns all IntegerPartitions in sorted order.
+     * @param n
+     * @return
+     */
     public static List<IntegerPartition> all(int n) {
-        return generator(n, n);
+        List<IntegerPartition> list = generator(n, n);
+        Collections.sort(list);
+        return list;
     }
 
     private static List<IntegerPartition> generator(int n, int max) {
         List<IntegerPartition> list = new ArrayList<>();
         if (n <= 0) {
-            return Collections.singletonList(new IntegerPartition(0));
+            return Collections.singletonList(new IntegerPartition());
         } else {
-            for (int i = 1; i <= Math.min(n, max); i++) {
+            for (int i = 1; i <= Utils.min(n, max); i++) {
                 List<IntegerPartition> recurse = generator(n - i, i);
                 for (IntegerPartition p : recurse) {
-                    IntegerPartition p2 = new IntegerPartition(p.getSize() + i);
-                    p2.addPart(i);
+                    IntegerPartitionBuilder builder = new IntegerPartitionBuilder(p.getSize() + i);
+                    builder.addPart(i);
                     for (int j : p.getPartition()) {
-                        p2.addPart(j);
+                        builder.addPart(j);
                     }
-                    list.add(p2);
+                    list.add(builder.build());
                 }
             }
         }
-        Collections.sort(list);
         return list;
     }
 }

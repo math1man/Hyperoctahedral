@@ -44,6 +44,10 @@ public class SignedYoungDiagram extends AbstractYoungDiagram<SignedYoungDiagram>
         return new SignedYoungDiagram(positive.reflect(), negative.reflect());
     }
 
+    /**
+     * Returns a reversed SignedYoungPartition, with the positive and negative components swapped.
+     * @return
+     */
     public SignedYoungDiagram reverse() {
         return new SignedYoungDiagram(negative, positive);
     }
@@ -134,6 +138,11 @@ public class SignedYoungDiagram extends AbstractYoungDiagram<SignedYoungDiagram>
         return "{" + positive + ", " + negative + "}";
     }
 
+    /**
+     * Returns all SignedYoungDiagrams in sorted order.
+     * @param n
+     * @return
+     */
     public static List<SignedYoungDiagram> all(int n) {
         List<SignedYoungDiagram> list = new ArrayList<>();
         for (SignedIntegerPartition sip : SignedIntegerPartition.all(n)) {

@@ -1,6 +1,7 @@
 package com.ariweiland.hyperoctahedral.young;
 
 import com.ariweiland.hyperoctahedral.partition.IntegerPartition;
+import com.ariweiland.hyperoctahedral.partition.IntegerPartitionBuilder;
 
 import java.util.*;
 
@@ -16,9 +17,6 @@ public class YoungDiagram extends AbstractYoungDiagram<YoungDiagram> {
     }
 
     public YoungDiagram(IntegerPartition partition) {
-        if (!partition.isComplete()) {
-            throw new IllegalArgumentException("Must specify a complete partition!");
-        }
         this.partition = partition;
     }
 
@@ -79,7 +77,7 @@ public class YoungDiagram extends AbstractYoungDiagram<YoungDiagram> {
         // first, handle single-corner reductions
         for (CornerSequence c : getCornerSequences()) {
             for (int i=0; i<c.degreesOfFreedom(n); i++) {
-                IntegerPartition ip = new IntegerPartition(reducedSize);
+                IntegerPartitionBuilder builder = new IntegerPartitionBuilder(reducedSize);
                 int k = 0;
                 int cut = n;
                 for (int j=0; j<p.length; j++) {
@@ -89,21 +87,21 @@ public class YoungDiagram extends AbstractYoungDiagram<YoungDiagram> {
                         // handle reduction
                         if (j == c.get(k).getCornerIndex()) { // remove more than one
                             if (k == c.size() - 1) { // last corner: remove the rest
-                                ip.addPart(p[j] - cut);
+                                builder.addPart(p[j] - cut);
                             } else { // middle corner: remove width and inner corner
-                                ip.addPart(p[j] - (c.get(k).getWidth() + 1));
+                                builder.addPart(p[j] - (c.get(k).getWidth() + 1));
                                 cut -= c.get(k).getWidth() + 1;
                                 k++;
                             }
                         } else { // remove just one
-                            ip.addPart(p[j] - 1);
+                            builder.addPart(p[j] - 1);
                             cut--;
                         }
                     } else {
-                        ip.addPart(p[j]);
+                        builder.addPart(p[j]);
                     }
                 }
-                reduced.put(new YoungDiagram(ip),
+                reduced.put(new YoungDiagram(builder.build()),
                         c.getHeight() - Math.max(c.get(0).getHeight() + c.getMinLength() - 1 - n, 0) - i);
             }
         }
@@ -149,6 +147,11 @@ public class YoungDiagram extends AbstractYoungDiagram<YoungDiagram> {
         return partition.toString();
     }
 
+    /**
+     * Returns all YoungDiagrams in sorted order.
+     * @param n
+     * @return
+     */
     public static List<YoungDiagram> all(int n) {
         List<YoungDiagram> list = new ArrayList<>();
         for (IntegerPartition ip : IntegerPartition.all(n)) {

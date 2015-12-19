@@ -1,5 +1,7 @@
 package com.ariweiland.hyperoctahedral.young;
 
+import com.ariweiland.hyperoctahedral.Utils;
+
 import java.util.List;
 
 /**
@@ -142,7 +144,7 @@ public class CornerSequence {
             return 0;
         } else {
             int firstHeight = get(0).getHeight();
-            return min(getLength() - n + 1, n - getMinLength() + 1, firstHeight, getLength() - firstHeight - getMinLength() + 2);
+            return Utils.min(getLength() - n + 1, n - getMinLength() + 1, firstHeight, getLength() - firstHeight - getMinLength() + 2);
         }
     }
 
@@ -210,11 +212,4 @@ public class CornerSequence {
 
     }
 
-    private static int min(int... ints) {
-        int min = ints[0];
-        for (int i=1; i<ints.length; i++) {
-            min = Math.min(min, ints[i]);
-        }
-        return min;
-    }
 }

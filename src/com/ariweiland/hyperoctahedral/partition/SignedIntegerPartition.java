@@ -1,7 +1,6 @@
 package com.ariweiland.hyperoctahedral.partition;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -10,118 +9,109 @@ import java.util.List;
  */
 public class SignedIntegerPartition extends AbstractPartition implements Comparable<SignedIntegerPartition> {
 
-    private final int[] positive;
-    private final int[] negative;
-    private int posLen;
-    private int negLen;
+    private final IntegerPartition positive;
+    private final IntegerPartition negative;
 
-
-    public SignedIntegerPartition(int size) {
-        this(size, new int[size], new int[size], 0, 0, false);
+    /**
+     * Constructs a SignedIntegerPartition of size 0.
+     */
+    public SignedIntegerPartition() {
+        this(new IntegerPartition(), new IntegerPartition());
     }
 
+    /**
+     * Constructs a SignedIntegerPartition from the input partitions.
+     * @param positive
+     * @param negative
+     */
     public SignedIntegerPartition(int[] positive, int[] negative) {
-        this(sum(positive) + sum(negative), positive, negative, positive.length, negative.length, true);
+        this(new IntegerPartition(positive), new IntegerPartition(negative));
     }
 
-    private SignedIntegerPartition(int size, int[] positive, int[] negative, int posLen, int negLen, boolean isComplete) {
-        super(size, isComplete);
+    /**
+     * Constructs a SignedIntegerPartition from the input arrays.
+     * @param positive
+     * @param negative
+     */
+    public SignedIntegerPartition(IntegerPartition positive, IntegerPartition negative) {
+        super(positive.getSize() + negative.getSize());
         this.positive = positive;
         this.negative = negative;
-        this.posLen = posLen;
-        this.negLen = negLen;
     }
 
-    public int[] getPositive() {
-        return cleanArray(positive, posLen);
+    public IntegerPartition getPositive() {
+        return positive;
     }
 
-    public int[] getNegative() {
-        return cleanArray(negative, negLen);
+    public IntegerPartition getNegative() {
+        return negative;
     }
 
     @Override
     public int[] getPartition() {
-        int[] joined = new int[posLen + negLen];
-        System.arraycopy(positive, 0, joined, 0, posLen);
-        for (int i=0; i<negLen; i++) {
-            joined[posLen + i] = -negative[negLen - 1 - i];
+        int[] pos = positive.getPartition();
+        int[] neg = negative.getPartition();
+        int[] joined = new int[pos.length + neg.length];
+        System.arraycopy(pos, 0, joined, 0, pos.length);
+        for (int i=0; i<neg.length; i++) {
+            joined[pos.length + i] = -neg[neg.length - 1 - i];
         }
         return joined;
     }
 
     @Override
-    public int remainder() {
-        return getSize() - sum(positive) - sum(negative);
-    }
-
-    @Override
-    public boolean addPart(int i) {
-        boolean output;
-        if (i < 0) {
-            output = addPart(-i, negative, negLen);
-            if (output) negLen++;
-        } else {
-            output = addPart(i, positive, posLen);
-            if (output) posLen++;
-        }
-        return output;
-    }
-
-    @Override
     public SignedIntegerPartition inverse() {
-        if (!isComplete()) {
-            throw new UnsupportedOperationException("Cannot invert an incomplete partition!");
-        }
-        IntegerPartition pos = new IntegerPartition(getPositive()).inverse();
-        IntegerPartition neg = new IntegerPartition(getNegative()).inverse();
-        return new SignedIntegerPartition(pos.getPartition(), neg.getPartition());
+        IntegerPartition pos = getPositive().inverse();
+        IntegerPartition neg = getNegative().inverse();
+        return new SignedIntegerPartition(pos, neg);
     }
 
+    /**
+     * Returns a reversed SignedIntegerPartition, with the positive and negative parts swapped.
+     * @return
+     */
     public SignedIntegerPartition reverse() {
-        if (!isComplete()) {
-            throw new UnsupportedOperationException("Cannot invert an incomplete partition!");
-        }
         return new SignedIntegerPartition(getNegative(), getPositive());
     }
 
     @Override
     public int compareTo(SignedIntegerPartition o) {
-        if (!isComplete() || !o.isComplete()) {
-            throw new UnsupportedOperationException("Cannot compare incomplete partitions!");
-        }
+        int[] myPos = positive.getPartition();
+        int[] myNeg = negative.getPartition();
+        int[] otPos = o.positive.getPartition();
+        int[] otNeg = o.negative.getPartition();
         // compare total negative
-        int compare = Integer.compare(sum(negative), sum(o.negative));
+        int compare = Integer.compare(negative.getSize(), o.negative.getSize());
         if (compare != 0) {
             return compare;
         }
         // compare negative length or positive length
-        if (sum(positive) < sum(negative)) {
-            compare = -Integer.compare(posLen, o.posLen);
+        if (positive.getSize() < negative.getSize()) {
+            compare = -Integer.compare(myPos.length, otPos.length);
         } else {
-            compare = Integer.compare(negLen, o.negLen);
+            compare = Integer.compare(myNeg.length, otNeg.length);
         }
         if (compare != 0) {
             return compare;
         }
         // compare the other
-        if (sum(positive) < sum(negative)) {
-            compare = Integer.compare(negLen, o.negLen);
+        if (positive.getSize() < negative.getSize()) {
+            compare = Integer.compare(myNeg.length, otNeg.length);
         } else {
-            compare = -Integer.compare(posLen, o.posLen);
+            compare = -Integer.compare(myPos.length, otPos.length);
         }
         if (compare != 0) {
             return compare;
         }
         // lexicographic sort
-        for (int i=0; i<posLen; i++) {
-            compare = Integer.compare(positive[i], o.positive[i]);
+        for (int i=0; i< myPos.length; i++) {
+            compare = Integer.compare(myPos[i], otPos[i]);
             if (compare != 0) {
                 return compare;
             }
         }
-        for (int i=0; i<negLen; i++) {
-            compare = -Integer.compare(negative[i], o.negative[i]);
+        for (int i=0; i< myNeg.length; i++) {
+            compare = -Integer.compare(myNeg[i], otNeg[i]);
             if (compare != 0) {
                 return compare;
             }
@@ -137,23 +127,28 @@ public class SignedIntegerPartition extends AbstractPartition implements Compara
 
         SignedIntegerPartition that = (SignedIntegerPartition) o;
 
-        return Arrays.equals(getNegative(), that.getNegative()) && Arrays.equals(getPositive(), that.getPositive());
+        return negative.equals(that.negative) && positive.equals(that.positive);
 
     }
 
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        result = 31 * result + Arrays.hashCode(positive);
-        result = 31 * result + Arrays.hashCode(negative);
+        result = 31 * result + positive.hashCode();
+        result = 31 * result + negative.hashCode();
         return result;
     }
 
     @Override
     public String toString() {
-        return "{" + Arrays.toString(getPositive()) + ", " + Arrays.toString(getNegative()) + "}";
+        return "{" + positive + ", " + negative + "}";
     }
 
+    /**
+     * Returns all SignedIntegerPartitions in sorted order.
+     * @param n
+     * @return
+     */
     public static List<SignedIntegerPartition> all(int n) {
         List<SignedIntegerPartition> list = new ArrayList<>();
         for (int i=0; i<=n; i++) {
@@ -161,7 +156,7 @@ public class SignedIntegerPartition extends AbstractPartition implements Compara
             List<IntegerPartition> negative = IntegerPartition.all(i);
             for (IntegerPartition pos : positive) {
                 for (IntegerPartition neg : negative) {
-                    list.add(new SignedIntegerPartition(pos.getPartition(), neg.getPartition()));
+                    list.add(new SignedIntegerPartition(pos, neg));
                 }
             }
         }
