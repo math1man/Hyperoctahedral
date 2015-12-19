@@ -1,101 +1,71 @@
 package com.ariweiland.hyperoctahedral.partition;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Ari Weiland
  */
-public class SignedIntegerPartition extends IntegerPartition implements Comparable<SignedIntegerPartition> {
+public class SignedIntegerPartition extends AbstractPartition implements Comparable<SignedIntegerPartition> {
 
+    private final int[] positive;
     private final int[] negative;
+    private int posLen;
     private int negLen;
 
+
     public SignedIntegerPartition(int size) {
-        super(size);
-        this.negative = new int[size];
-        this.negLen = 0;
+        this(size, new int[size], new int[size], 0, 0, false);
     }
 
     public SignedIntegerPartition(int[] positive, int[] negative) {
-        this(positive, negative, sum(positive) + sum(negative), positive.length, negative.length, true);
+        this(sum(positive) + sum(negative), positive, negative, positive.length, negative.length, true);
     }
 
-    public SignedIntegerPartition(SignedIntegerPartition sip) {
-        this(sip.partition, sip.negative, sip.getSize(), sip.length, sip.negLen, sip.isComplete());
-    }
-
-    protected SignedIntegerPartition(int[] positive, int[] negative, int size, int posLen, int negLen, boolean isComplete) {
-        super(positive, size, posLen, isComplete);
+    private SignedIntegerPartition(int size, int[] positive, int[] negative, int posLen, int negLen, boolean isComplete) {
+        super(size, isComplete);
+        this.positive = positive;
         this.negative = negative;
+        this.posLen = posLen;
         this.negLen = negLen;
     }
 
     public int[] getPositive() {
-        return getPartition();
+        return cleanArray(positive, posLen);
     }
 
     public int[] getNegative() {
-        return negativePartition().getPartition();
-    }
-
-    protected IntegerPartition negativePartition() {
-        return new IntegerPartition(negative, getSize() - sum(partition), negLen, isComplete());
+        return cleanArray(negative, negLen);
     }
 
     @Override
     public int remainder() {
-        return super.remainder() - sum(negative);
+        return getSize() - sum(positive) - sum(negative);
     }
 
     @Override
     public boolean addPart(int i) {
+        boolean output;
         if (i < 0) {
-            boolean output = negativePartition().addPart(-i);
-            negLen += (output ? 1 : 0);
-            isComplete = (remainder() == 0);
-            return output;
+            output = addPart(-i, negative, negLen);
+            if (output) negLen++;
         } else {
-            return super.addPart(i);
+            output = addPart(i, positive, posLen);
+            if (output) posLen++;
         }
+        return output;
     }
 
-    public int complete(boolean positive) {
-        if (positive) {
-            return super.complete();
-        } else {
-            int output = negativePartition().complete();
-            negLen += output;
-            isComplete = true;
-            return output;
-        }
-    }
-
+    @Override
     public SignedIntegerPartition inverse() {
         if (!isComplete()) {
             throw new UnsupportedOperationException("Cannot invert an incomplete partition!");
         }
-        SignedIntegerPartition inverse = new SignedIntegerPartition(getSize());
-        int i = length - 1;
-        int j = 1;
-        while (i >= 0) {
-            if (partition[i] >= j) {
-                inverse.addPart(i + 1);
-                j++;
-            } else {
-                i--;
-            }
-        }
-        i = negLen - 1;
-        j = 1;
-        while (i >= 0) {
-            if (negative[i] >= j) {
-                inverse.addPart(-(i + 1));
-                j++;
-            } else {
-                i--;
-            }
-        }
-        return inverse;
+        IntegerPartition pos = new IntegerPartition(getPositive()).inverse();
+        IntegerPartition neg = new IntegerPartition(getNegative()).inverse();
+        return new SignedIntegerPartition(pos.getPartition(), neg.getPartition());
     }
 
     public SignedIntegerPartition reverse() {
@@ -116,8 +86,8 @@ public class SignedIntegerPartition extends IntegerPartition implements Comparab
             return compare;
         }
         // compare negative length or positive length
-        if (sum(partition) < sum(negative)) {
-            compare = -Integer.compare(length, o.length);
+        if (sum(positive) < sum(negative)) {
+            compare = -Integer.compare(posLen, o.posLen);
         } else {
             compare = Integer.compare(negLen, o.negLen);
         }
@@ -125,17 +95,17 @@ public class SignedIntegerPartition extends IntegerPartition implements Comparab
             return compare;
         }
         // compare the other
-        if (sum(partition) < sum(negative)) {
+        if (sum(positive) < sum(negative)) {
             compare = Integer.compare(negLen, o.negLen);
         } else {
-            compare = -Integer.compare(length, o.length);
+            compare = -Integer.compare(posLen, o.posLen);
         }
         if (compare != 0) {
             return compare;
         }
-        // compare largest element
-        for (int i=0; i<length; i++) {
-            compare = Integer.compare(partition[i], o.partition[i]);
+        // lexicographic sort
+        for (int i=0; i<posLen; i++) {
+            compare = Integer.compare(positive[i], o.positive[i]);
             if (compare != 0) {
                 return compare;
             }
@@ -145,15 +115,6 @@ public class SignedIntegerPartition extends IntegerPartition implements Comparab
             if (compare != 0) {
                 return compare;
             }
-        }
-
-        if (negLen == 0 || length > 0 && partition[0] > negative[0]) {
-            compare = Integer.compare(partition[0], o.partition[0]);
-        } else {
-            compare = -Integer.compare(negative[0], o.negative[0]);
-        }
-        if (compare != 0) {
-            return compare;
         }
         return 0;
     }
@@ -166,19 +127,35 @@ public class SignedIntegerPartition extends IntegerPartition implements Comparab
 
         SignedIntegerPartition that = (SignedIntegerPartition) o;
 
-        return Arrays.equals(getNegative(), that.getNegative());
+        return Arrays.equals(getNegative(), that.getNegative()) && Arrays.equals(getPositive(), that.getPositive());
 
     }
 
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        result = 31 * result + Arrays.hashCode(getNegative());
+        result = 31 * result + Arrays.hashCode(positive);
+        result = 31 * result + Arrays.hashCode(negative);
         return result;
     }
 
     @Override
     public String toString() {
-        return "{" + super.toString() + ", " + Arrays.toString(getNegative()) + "}";
+        return "{" + Arrays.toString(getPositive()) + ", " + Arrays.toString(getNegative()) + "}";
+    }
+
+    public static List<SignedIntegerPartition> signedIntegerPartitions(int n) {
+        List<SignedIntegerPartition> list = new ArrayList<>();
+        for (int i=0; i<=n; i++) {
+            List<IntegerPartition> positive = IntegerPartition.integerPartitions(n - i);
+            List<IntegerPartition> negative = IntegerPartition.integerPartitions(i);
+            for (IntegerPartition pos : positive) {
+                for (IntegerPartition neg : negative) {
+                    list.add(new SignedIntegerPartition(pos.getPartition(), neg.getPartition()));
+                }
+            }
+        }
+        Collections.sort(list);
+        return list;
     }
 }

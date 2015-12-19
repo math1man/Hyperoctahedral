@@ -10,7 +10,7 @@ import java.util.Map;
 /**
  * @author Ari Weiland
  */
-public class YoungDiagram {
+public class YoungDiagram implements Comparable<YoungDiagram> {
 
     private final IntegerPartition partition;
 
@@ -118,6 +118,23 @@ public class YoungDiagram {
         }
         // multicorner reductions
         return reduced;
+    }
+
+    @Override
+    public int compareTo(YoungDiagram o) {
+        // compare by length
+        int compare = Integer.compare(partition.getPartition().length, o.partition.getPartition().length);
+        if (compare != 0) {
+            return compare;
+        }
+        // compare lexicographically
+        for (int i=0; i<partition.getPartition().length; i++) {
+            compare = -Integer.compare(partition.getPartition()[i], o.partition.getPartition()[i]);
+            if (compare != 0) {
+                return compare;
+            }
+        }
+        return 0;
     }
 
     @Override

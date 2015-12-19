@@ -27,8 +27,8 @@ public class CharacterTableGenerator {
         record.get(syd).put(p, chi);
     }
 
-    public int[][] generateTable(int n) {
-        List<SignedIntegerPartition> sips = MathUtils.signedIntegerPartitions(n);
+    public int[][] generateHnTable(int n) {
+        List<SignedIntegerPartition> sips = SignedIntegerPartition.signedIntegerPartitions(n);
         Collections.sort(sips);
         List<SignedYoungDiagram> syds = new ArrayList<>();
         for (SignedIntegerPartition p : sips) {
@@ -84,7 +84,7 @@ public class CharacterTableGenerator {
         }
         int size = Integer.parseInt(args[0]);
         CharacterTableGenerator gen = new CharacterTableGenerator();
-        int[][] table = gen.generateTable(size);
+        int[][] table = gen.generateHnTable(size);
         System.out.print("{");
         for (int i=0; i<table.length; i++) {
             System.out.print("{");

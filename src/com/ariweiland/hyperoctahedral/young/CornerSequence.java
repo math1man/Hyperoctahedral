@@ -1,7 +1,5 @@
 package com.ariweiland.hyperoctahedral.young;
 
-import com.ariweiland.hyperoctahedral.MathUtils;
-
 import java.util.List;
 
 /**
@@ -28,6 +26,14 @@ public class CornerSequence {
         this.startIndex = corners.get(0).getStartIndex();
         this.startPartSize = corners.get(0).getStartPartSize();
         this.corners = corners;
+    }
+
+    public static int min(int... ints) {
+        int min = ints[0];
+        for (int i=1; i<ints.length; i++) {
+            min = Math.min(min, ints[i]);
+        }
+        return min;
     }
 
     public int getStartIndex() {
@@ -100,7 +106,7 @@ public class CornerSequence {
             return 0;
         } else {
             int firstHeight = get(0).getHeight();
-            return MathUtils.min(getLength() - n + 1, n - getMinLength() + 1, firstHeight, getLength() - firstHeight - getMinLength() + 2);
+            return min(getLength() - n + 1, n - getMinLength() + 1, firstHeight, getLength() - firstHeight - getMinLength() + 2);
         }
     }
 

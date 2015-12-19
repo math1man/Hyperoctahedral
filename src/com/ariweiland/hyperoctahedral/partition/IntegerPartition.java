@@ -1,20 +1,17 @@
 package com.ariweiland.hyperoctahedral.partition;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Ari Weiland
  */
-public class IntegerPartition {
+public class IntegerPartition extends AbstractPartition implements Comparable<IntegerPartition> {
 
-    protected final int[] partition;
-    private final int size;
-    protected int length;
-    protected boolean isComplete;
-
-    public static IntegerPartition singletonPartition(int n) {
-        return new IntegerPartition(new int[]{n});
-    }
+    private final int[] partition;
+    private int length;
 
     public IntegerPartition(int size) {
         this(new int[size], size, 0, size == 0);
@@ -24,84 +21,34 @@ public class IntegerPartition {
         this(partition, sum(partition), partition.length, true);
     }
 
-    public IntegerPartition(IntegerPartition p) {
-        this(p.partition, p.size, p.length, p.isComplete);
-    }
-
-    protected IntegerPartition(int[] partition, int size, int length, boolean isComplete) {
+    private IntegerPartition(int[] partition, int size, int length, boolean isComplete) {
+        super(size, isComplete);
         this.partition = partition;
-        this.size = size;
         this.length = length;
-        this.isComplete = isComplete;
     }
 
     public int[] getPartition() {
-        int[] output = new int[length];
-        System.arraycopy(partition, 0, output, 0, length);
+        return cleanArray(partition, length);
+    }
+
+    @Override
+    public int remainder() {
+        return getSize() - sum(partition);
+    }
+
+    @Override
+    public boolean addPart(int i) {
+        boolean output = addPart(i, partition, length);
+        if (output) length++;
         return output;
     }
 
-    public int getSize() {
-        return size;
-    }
-
-    public boolean isComplete() {
-        return isComplete;
-    }
-
-    /**
-     * Returns the remainder of this partition that has not been partitioned yet.
-     * Returns 0 for a complete partition.
-     * @return
-     */
-    public int remainder() {
-        return size - sum(partition);
-    }
-
-    /**
-     * Tries to add a part i to an unfinished partition.
-     * Returns whether or not the addition was successful.
-     * Addition fails if 1 > i or i > remainder().
-     * If the partition is complete (remainder() == 0), it always fails.
-     * @param i
-     * @return
-     */
-    public boolean addPart(int i) {
-        int remainder = remainder();
-        if (i < 1 || remainder < i) {
-            return false;
-        } else {
-            partition[length] = i;
-            length++;
-            isComplete = (remainder == i);
-            return true;
-        }
-    }
-
-    /**
-     * Completes an unfinished partition by filling it in with 1s.
-     * Returns the number of 1s added.  If the partition is complete, returns 0.
-     * @return
-     */
-    public int complete() {
-        int remainder = remainder();
-        for (int i=0; i<remainder; i++) {
-            partition[length] = 1;
-            length++;
-        }
-        isComplete = true;
-        return remainder;
-    }
-
-    /**
-     * Returns a new partition that is the inverse of this one.
-     * @return
-     */
+    @Override
     public IntegerPartition inverse() {
         if (!isComplete()) {
             throw new UnsupportedOperationException("Cannot invert an incomplete partition!");
         }
-        IntegerPartition inverse = new IntegerPartition(size);
+        IntegerPartition inverse = new IntegerPartition(getSize());
         int i = length - 1;
         int j = 1;
         while (i >= 0) {
@@ -116,22 +63,41 @@ public class IntegerPartition {
     }
 
     @Override
+    public int compareTo(IntegerPartition o) {
+        if (!isComplete() || !o.isComplete()) {
+            throw new UnsupportedOperationException("Cannot compare incomplete partitions!");
+        }
+        // compare length
+        int compare = -Integer.compare(length, o.length);
+        if (compare != 0) {
+            return compare;
+        }
+        // compare lexicographically
+        for (int i=0; i<length; i++) {
+            compare = Integer.compare(partition[i], o.partition[i]);
+            if (compare != 0) {
+                return compare;
+            }
+        }
+        return 0;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
 
         IntegerPartition that = (IntegerPartition) o;
 
-        return isComplete == that.isComplete && size == that.size
-                && Arrays.equals(getPartition(), that.getPartition());
+        return Arrays.equals(getPartition(), that.getPartition());
 
     }
 
     @Override
     public int hashCode() {
-        int result = Arrays.hashCode(getPartition());
-        result = 31 * result + size;
-        result = 31 * result + (isComplete ? 1 : 0);
+        int result = super.hashCode();
+        result = 31 * result + Arrays.hashCode(partition);
         return result;
     }
 
@@ -140,11 +106,28 @@ public class IntegerPartition {
         return Arrays.toString(getPartition());
     }
 
-    protected static int sum(int[] p) {
-        int sum = 0;
-        for (int i : p) {
-            sum += i;
+    public static List<IntegerPartition> integerPartitions(int n) {
+        return integerPartitionRecurse(n, n);
+    }
+
+    private static List<IntegerPartition> integerPartitionRecurse(int n, int max) {
+        List<IntegerPartition> list = new ArrayList<>();
+        if (n <= 0) {
+            return Collections.singletonList(new IntegerPartition(0));
+        } else {
+            for (int i = 1; i <= Math.min(n, max); i++) {
+                List<IntegerPartition> recurse = integerPartitionRecurse(n - i, i);
+                for (IntegerPartition p : recurse) {
+                    IntegerPartition p2 = new IntegerPartition(p.getSize() + i);
+                    p2.addPart(i);
+                    for (int j : p.getPartition()) {
+                        p2.addPart(j);
+                    }
+                    list.add(p2);
+                }
+            }
         }
-        return sum;
+        Collections.sort(list);
+        return list;
     }
 }

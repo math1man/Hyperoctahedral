@@ -97,7 +97,7 @@ public class SignedYoungDiagram implements Comparable<SignedYoungDiagram> {
         if (compare != 0) {
             return compare;
         }
-
+        // lexicographic sort
         for (int i=0; i<myPosLen; i++) {
             compare = -Integer.compare(myPos.getPartition()[i], otPos.getPartition()[i]);
             if (compare != 0) {
@@ -109,15 +109,6 @@ public class SignedYoungDiagram implements Comparable<SignedYoungDiagram> {
             if (compare != 0) {
                 return compare;
             }
-        }
-        // compare largest element
-        if (myNegLen == 0 || myPosLen > 0 && myPos.getPartition()[0] > myNeg.getPartition()[0]) {
-            compare = -Integer.compare(myPos.getPartition()[0], otPos.getPartition()[0]);
-        } else {
-            compare = Integer.compare(myNeg.getPartition()[0], otNeg.getPartition()[0]);
-        }
-        if (compare != 0) {
-            return compare;
         }
         return 0;
     }
